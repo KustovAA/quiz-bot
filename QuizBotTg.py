@@ -89,9 +89,13 @@ class QuizBotTg:
                     ],
                     QuizBotTg.ANSWER: [
                         MessageHandler(
-                            Filters.text,
+                            Filters.text & ~Filters.regex('^Сдаться$'),
                             self.quiz_answer_handler
                         ),
+                        MessageHandler(
+                            Filters.regex('^Сдаться$'),
+                            self.show_answer_handler
+                        )
                     ]
                 },
                 fallbacks=[]
