@@ -1,9 +1,15 @@
 import re
 
+import requests
 
-def get_quiz_from_file(filepath):
-    with open(filepath, 'r', encoding='KOI8-R') as file:
-        file_contents = file.read()
+
+def get_quiz_from_file(filepath: str):
+    if filepath.startswith('http'):
+        response = requests.get(filepath)
+        file_contents = response.content.decode(encoding='KOI8-R')
+    else:
+        with open(filepath, 'r', encoding='KOI8-R') as file:
+            file_contents = file.read()
 
     chunks = file_contents.split('\n\n')
 
