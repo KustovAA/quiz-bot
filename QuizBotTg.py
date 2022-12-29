@@ -16,19 +16,14 @@ from utils import get_quiz_from_file
 class QuizBotTg:
     NEW_QUESTION, ANSWER = range(2)
 
-    def __init__(self, token, quiz_filepath, storage_engine='redis'):
+    def __init__(self, token, quiz_filepath):
         self.updater = Updater(token=token)
         self.quiz_content = get_quiz_from_file(quiz_filepath)
         self.default_markup = ReplyKeyboardMarkup(
             [['Новый вопрос', 'Сдаться']],
             one_time_keyboard=True
         )
-        if storage_engine == 'redis':
-            self.storage = redis.Redis(decode_responses=True)
-
-    @property
-    def dispatcher(self):
-        return self.updater.dispatcher
+        self.storage = redis.Redis(decode_responses=True)
 
     def send_message(self, update, text):
         return update.message.reply_text(text, reply_markup=self.default_markup)
@@ -51,7 +46,7 @@ class QuizBotTg:
         answer = self.quiz_content[question]
         expected_answer = answer.split('(')[0].split('.')[0]
 
-        self.send_message(update, f'Правильный ответ: {expected_answer}')
+        update.message.reply_text(f'Правильный ответ: {expected_answer}', reply_markup=self.default_markup)
         self.quiz_content.pop(question)
         self.storage.delete(update.message.chat_id)
 
@@ -63,17 +58,17 @@ class QuizBotTg:
         user_answer = update.message.text
         expected_answer = answer.split('(')[0].split('.')[0]
         if expected_answer == user_answer:
-            self.send_message(update, 'Верно')
+            update.message.reply_text('Верно', reply_markup=self.default_markup)
             self.quiz_content.pop(question)
             self.storage.delete(update.message.chat_id)
 
             return QuizBotTg.NEW_QUESTION
         else:
-            self.send_message(update, 'Ошибка! попробуйте еще раз.')
+            update.message.reply_text('Ошибка! попробуйте еще раз.', reply_markup=self.default_markup)
             return QuizBotTg.ANSWER
 
     def run(self):
-        self.dispatcher.add_handler(
+        self.updater.dispatcher.add_handler(
             ConversationHandler(
                 entry_points=[CommandHandler('start', self.start_handler)],
                 states={

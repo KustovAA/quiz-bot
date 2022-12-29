@@ -12,7 +12,7 @@ from utils import get_quiz_from_file
 class QuizBotVk:
     NEW_QUESTION, ANSWER = range(2)
 
-    def __init__(self, token, quiz_filepath, storage_engine='redis'):
+    def __init__(self, token, quiz_filepath):
         vk_session = vk.VkApi(token=token)
         self.vk_api = vk_session.get_api()
         self.longpoll = VkLongPoll(vk_session)
@@ -21,8 +21,7 @@ class QuizBotVk:
         self.keyboard = VkKeyboard(one_time=True)
         self.keyboard.add_button('Новый вопрос', color=VkKeyboardColor.PRIMARY)
         self.keyboard.add_button('Сдаться', color=VkKeyboardColor.PRIMARY)
-        if storage_engine == 'redis':
-            self.storage = redis.Redis(decode_responses=True)
+        self.storage = redis.Redis(decode_responses=True)
 
     def send_message(self, text, event):
         self.vk_api.messages.send(
