@@ -25,11 +25,8 @@ class QuizBotTg:
         )
         self.storage = redis.Redis(decode_responses=True)
 
-    def send_message(self, update, text):
-        return update.message.reply_text(text, reply_markup=self.default_markup)
-
     def start_handler(self, update: Update, _):
-        self.send_message(update, 'Привет! Сыграем в игру?')
+        update.message.reply_text('Привет! Сыграем в игру?', reply_markup=self.default_markup)
 
         return QuizBotTg.NEW_QUESTION
 
@@ -37,7 +34,7 @@ class QuizBotTg:
         question = random.choice(list(self.quiz_content.keys()))
         self.storage.set(update.message.chat_id, question)
 
-        self.send_message(update, question)
+        update.message.reply_text(question, reply_markup=self.default_markup)
 
         return QuizBotTg.ANSWER
 
